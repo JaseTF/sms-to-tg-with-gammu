@@ -2,6 +2,7 @@
 
 import os
 import sys
+import datetime
 import requests
 
 BOT_API_KEY = "super-secret-api-key"  # This is a telegram bot api token
@@ -15,9 +16,9 @@ SEND_TG_MESSAGE_ENDPOINT = "https://api.telegram.org/bot{key}/sendMessage"  # AP
 
 #Message template to fill with meaningful info
 NEW_SMS_RECIEVED_TEMPLATE = """\
-New SMS recieved on your {phone}
+New SMS recieved for {phone}
 
-FROM: {caller}
+FROM: {caller} on {timestamp}
 {message}\
 """
 
@@ -25,6 +26,7 @@ FROM: {caller}
 
 # Method retrieves info from enviorement variables when called. DOes not work with old gammu versions (prev 1.32 or something like this)
 def retrieve_sms():
+    date = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     partsAmount = int(os.environ["DECODED_PARTS"])
     callerID = str(os.environ["SMS_1_NUMBER"])
     phoneID = str(os.environ["PHONE_ID"])
@@ -40,18 +42,20 @@ def retrieve_sms():
             if fragmentName in os.environ:
                 text = text + os.environ[fragmentName]
 
-    return(phoneID, callerID, text)
+    return(phoneID, callerID, date, text)
 
 # Method sends sms info and body to telegram
-# TODO: add timestamp the message was recieved
-def send_tg_message(phoneID, callerID, text):
+def send_tg_message(phoneID, callerID, date, text):
     payload = {}
     payload["chat_id"] = CHAT_ID[phoneID]
-    payload["text"] = NEW_SMS_RECIEVED_TEMPLATE.format(phone = phoneID, caller = callerID, message = text)
+    payload["text"] = NEW_SMS_RECIEVED_TEMPLATE.format(phone = phoneID,
+                                                       caller = callerID,
+                                                       message = text,
+                                                       timestamp = date)
     requests.get(SEND_TG_MESSAGE_ENDPOINT.format(key = BOT_API_KEY), params = payload)
 
 if __name__ == "__main__":
 # Plain function calls.
 # TODO: get info and fork immediately to send. It is best to return initial call ASAP not to miss any new messages coming during run
-    phoneID, callerID, text = retrieve_sms()
-    send_tg_message(phoneID, callerID, text)
+    phoneID, callerID, date, text = retrieve_sms()
+    send_tg_message(phoneID, callerID, date, text)
