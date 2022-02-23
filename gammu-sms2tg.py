@@ -5,9 +5,12 @@ import sys
 import requests
 
 BOT_API_KEY = "super-secret-api-key"  # This is a telegram bot api token
-ARTEM_PHONE = "ArtemsPhoneNumber"     # References PhoneID in gammu-smsd config
-NADYA_PHONE = "NadyasPhoneNumber"     # References PhoneID in gammu-smsd config
-CHAT_ID = {ARTEM_PHONE: "chat-id-1", NADYA_PHONE: "chat-id-2"}              # This is chat IDs for private convos with the bot. Can be a group chat id if needed.
+# PhoneID - is a reference to relevant congig option of gammu-smsd for multi-phone set up
+# In my case I have two modems connected and like to send them to different (personal) chats
+CHAT_ID = {
+    "PhoneID1": "chat-id-1",
+    "PhoneID2": "chat-id-2"
+}
 SEND_TG_MESSAGE_ENDPOINT = "https://api.telegram.org/bot{key}/sendMessage"  # API URL for sending messages
 
 #Message template to fill with meaningful info
